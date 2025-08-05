@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools >= 61.0"]  # mlflow, torchmetrics
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trl_llm"
+# authors = [a remplir]
+description = "Finetuning for translation rocq-lean"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+version = "1.0.0"
+
+classifiers = [
+  # How mature is this project? Common values are
+  #   3 - Alpha
+  #   4 - Beta
+  #   5 - Production/Stable
+  "Development Status :: 3 - Alpha",
+
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3 :: Only",
+]
+readme = "README.md"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["trl_llm*"]
+exclude = []
+namespaces = false
+
+
+[tool.ruff]
+target-version = "py312"
+
+[project.scripts]
+bu_llm = "trl_llm.cli:cli"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
