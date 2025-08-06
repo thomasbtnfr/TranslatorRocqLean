@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from itertools import repeat
 
 import torch
 from torch.utils.data import IterableDataset as TorchIterableDataset
@@ -10,7 +11,7 @@ from trl_llm.train.config import TrainingConfig
 
 
 @dataclass
-class TRLIterableDataset(TorchIterableDataset):
+class TrainTRLIterableDataset(TorchIterableDataset):
     config: TrainingConfig
     tokenizer: AutoTokenizer
     sample_cls: BaseDataset
@@ -64,3 +65,38 @@ class TRLIterableDataset(TorchIterableDataset):
                 buf_inputs = input_ids
                 buf_masks = [causal_mask]
                 yield data, attention_mask, target
+
+
+class ValidTRLIterableDataset(TrainTRLIterableDataset):
+    def separated_samples_iter(self):
+        for i, sample in enumerate(self.dataset):
+            yield self.sample_cls(**sample).get_sample_random_template(self.config)
+
+    def yield_fake(self):
+        # Yield fake data so that during evaluation, even if a rank has fewer samples,
+        # it still does a forward so that we can unshard the FSDP model.
+        # It is up to the evaluation loop to detect that and break the dataloader loop.
+        # Should not happen during training since the dataset is so large.
+        fake_data = torch.tensor([self.tokenizer.eos_token_id], dtype=torch.long)
+        fake_labels = torch.tensor([self.tokenizer.pad_id], dtype=torch.long)
+        fake_attn_mask = torch.zeros((1, 1))
+        fake_attn_mask = self.invert_causal_mask(fake_attn_mask)
+        return repeat((fake_data, fake_attn_mask, fake_labels))
+
+    def __iter__(self):
+        for sample in self.separated_samples_iter():
+            input_ids = self.tokenize(sample) + [self.tokenizer.eos_token_id]
+
+            if len(input_ids) > self.config.seq_length + 1:
+                input_ids = input_ids[:self.config.seq_length + 1]
+
+            data = torch.tensor(input_ids)[:-1]
+            target = torch.tensor(input_ids)[1:]
+            attention_mask = (
+                torch.tril(torch.ones(len(input_ids), len(input_ids)))[:-1, :-1]
+            )
+            attention_mask = self.invert_causal_mask(attention_mask)
+            if attention_mask.ndim == 3:
+                yield data, attention_mask, target
+
+        yield from self.yield_fake()

@@ -1,0 +1,18 @@
+[
+  {
+    "rocq_statement": "Theorem algebra_amgm_prod1toneq1_sum1tongeqn :\nforall (a : nat -> R) (n : nat),\n(forall i, 0 <= a i) ->\nRprod n a = 1 ->\nRsum n a >= INR n.",
+    "lean_statement": "\t\ntheorem algebra_amgm_prod1toneq1_sum1tongeqn (a : ℕ → NNReal) (n : ℕ)\n(h₀ : Finset.prod (Finset.range n) a = 1) : Finset.sum (Finset.range n) a ≥ n := by"
+  },
+  {
+    "rocq_statement": "Theorem mathd_numbertheory_211 :\nlength (filter (fun n => (4 * n - 2) mod 6 =? 0) (List.seq 1 59)) = 20.",
+    "lean_statement": "theorem mathd_numbertheory_211 :\nFinset.card (Finset.filter (fun n => 6 ∣ 4 * ↑n - (2 : ℤ)) (Finset.range 60)) = 20 := by"
+  },
+  {
+    "rocq_statement": "Require Import Reals Factorial Znumtheory Coquelicot.Derive.\nTheorem putnam_2014_a1\n(f : R -> R := fun x => (1 - x + x^2) * (exp x))\n(hf : forall x : R, forall n : nat, ex_derive_n f n x)\n(coeff : nat -> R := fun i => Derive_n f i 0 / INR (fact i))\n(n : nat)\n(hcoeff : coeff n <> 0)\n: exists a b: Z, b <> 0%Z /\\ coeff n = IZR a / IZR b /\\ Zis_gcd a b 1 /\\ (a = 1%Z \\/ prime a).\nProof. Admitted.",
+    "lean_statement": "import Mathlib\n\nopen Topology Filter\n\n/--\nProve that every nonzero coefficient of the Taylor series of \\[(1 - x + x^2)e^x\\] about $x=0$ is a rational number whose numerator (in lowest terms) is either $1$ or a prime number.\n-/\ntheorem putnam_2014_a1\n(f : ℝ → ℝ)\n(hf : ∀ x : ℝ, f x = (1 - x + x ^ 2) * Real.exp x)\n(hfdiff : ContDiff ℝ ⊤ f)\n(c : ℕ → ℝ)\n(hc : ∀ k : ℕ, c k = taylorCoeffWithin f k Set.univ 0)\n: ∀ k : ℕ, c k ≠ 0 → ∃ q : ℚ, c k = q ∧ (q.num = 1 ∨ Prime q.num.natAbs) :=\nsorry"
+  },
+  {
+    "rocq_statement": "\t\nRequire Import Ensembles QArith.\nTheorem putnam_1962_a6\n(A : Ensemble Q)\n(hSSadd : forall a b : Q, (A a /\\ A b) -> A (a + b))\n(hSSprod : forall a b : Q, (A a /\\ A b) -> A (a * b))\n(hSScond : forall r : Q, (A r \\/ A (-r) \\/ r = 0) /\\ ~(A r \\/ A (-r)) /\\ ~(A r /\\ r = 0) /\\ ~(A (-r) /\\ r = 0))\n: A = (fun r : Q => r > 0).\nProof. Admitted.",
+    "lean_statement": "import Mathlib\n\n/--\nLet $S$ be a set of rational numbers such that whenever $a$ and $b$ are members of $S$, so are $a+b$ and $ab$, and having the property that for every rational number $r$ exactly one of the following three statements is true: \\[ r \\in S, -r \\in S, r = 0. \\] Prove that $S$ is the set of all positive rational numbers.\n-/\ntheorem putnam_1962_a6\n(S : Set ℚ)\n(hSadd : ∀ a ∈ S, ∀ b ∈ S, a + b ∈ S)\n(hSprod : ∀ a ∈ S, ∀ b ∈ S, a * b ∈ S)\n(hScond : ∀ r : ℚ, (r ∈ S ∨ -r ∈ S ∨ r = 0) ∧ ¬(r ∈ S ∧ -r ∈ S) ∧ ¬(r ∈ S ∧ r = 0) ∧ ¬(-r ∈ S ∧ r = 0))\n: S = { r : ℚ | r > 0 } :=\nsorry"
+  }
+]

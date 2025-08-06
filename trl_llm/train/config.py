@@ -35,16 +35,22 @@ class TrainingConfig:
     mlflow_path: Path = field(
         default=Path.cwd() / "mlruns", metadata={"converter": Path, "export": False}
     )
+    visu_data_path: Path = field(
+        default=Path.cwd() / "trl_llm" / "data" / "visual_prompt.json"
+    )
     exp_name: str = field(default="test", metadata={"converter": str, "export": False})
     run_name: str = field(default="", metadata={"converter": str, "export": False})
     seq_length: int = field(default=2048, metadata={"converter": int, "export": True})
     profile: bool = field(default=False, metadata={"converter": bool, "export": False})
     _track: bool = field(default=False, metadata={"converter": bool, "export": False})
     debug: bool = field(default=False, metadata={"converter": bool, "export": True})
+    visual_prompt: bool = field(default=False, metadata={"converter": bool, "export": False})
+    deactivate_sharding: bool = field(default=False, metadata={"converter": bool, "export": True})
     num_steps: int = field(default=1000, metadata={"converter": int, "export": True})
     lr: float = field(default=1e-05, metadata={"converter": float, "export": True})
     warmup_steps: int = field(default=200, metadata={"converter": int, "export": True})
     batch_size: int = field(default=1, metadata={"converter": int, "export": True})
+    eval_steps: int = field(default=1000, metadata={"converter": int, "export": True})
     template_rocq: str = field(
         default="Rocq code:\n```rocq\n{content}\n```",
         metadata={"converter": str, "export": True}
@@ -63,6 +69,12 @@ class TrainingConfig:
     )
     probability_rocq_to_lean: float = field(
         default=0.5, metadata={"converter": float, "export": True}
+    )
+    resume_from_step: int = field(
+        default=0, metadata={"converter": int, "export": False}
+    )
+    gradient_accumulation: int = field(
+        default=1, metadata={"converter": int, "export": True}
     )
 
     step: int = field(default=0, init=False)
@@ -110,32 +122,42 @@ class TrainingConfig:
             "--checkpoints-dir", "--checkpoints_dir", dest="checkpoints_dir"
         )
         parser.add_argument(
-            "--minif2f-data-path", "--minif2f_data_path", "minif2f-path", "minif2f_path", dest="minif2f_data_path"
+            "--minif2f-data-path", "--minif2f_data_path", "--minif2f-path", "--minif2f_path", dest="minif2f_data_path"
         )
         parser.add_argument(
-            "--putnam-data-path", "--putnam_data_path", "putnam-path", "putnam_path", dest="putnam_data_path"
+            "--putnam-data-path", "--putnam_data_path", "--putnam-path", "--putnam_path", dest="putnam_data_path"
         )
-        parser.add_argument("--mlflow_path", "--mlflow-path", dest="mlflow_path")
+        parser.add_argument(
+            "--mlflow_path", "--mlflow-path", dest="mlflow_path"
+        )
+        parser.add_argument(
+            "--visu-data-path",
+            "--visu_data_path",
+            dest="visu_data_path"
+        )
         parser.add_argument("--exp-name", "--exp_name", dest="exp_name")
         parser.add_argument("--run-name", "--run_name", dest="run_name")
         parser.add_argument(
             "--sequence-length", "--sequence_length", "--seq-length", "--seq_length", dest="seq_length",
             help="Length of the sequence",
         )
-        parser.add_argument("--model-name", "--model_name", dest="model_name")
         parser.add_argument("--steps", "--num_steps", "--num-steps", dest="num_steps")
         parser.add_argument("--lr")
         parser.add_argument("--profile", action=BooleanOptionalAction)
         parser.add_argument("--track", dest="_track", action=BooleanOptionalAction)
         parser.add_argument("--debug", action=BooleanOptionalAction)
+        parser.add_argument("--visual-prompt", action=BooleanOptionalAction)
+        parser.add_argument("--deactivate-sharding", action=BooleanOptionalAction)
         parser.add_argument("--warmup_steps", "--warmup-steps", dest="warmup_steps")
         parser.add_argument("--bsz", "--batch-size", "--batch_size", dest="batch_size")
+        parser.add_argument("--eval-steps", "--eval_steps", dest="eval_steps")
         parser.add_argument("--template-rocq", "--template_rocq", dest="template_rocq")
         parser.add_argument("--template-lean", "--template_lean", dest="template_lean")
         parser.add_argument("--template-rocq-to-lean", "--template_rocq_to_lean", dest="template_rocq_to_lean")
         parser.add_argument("--template-lean-to-rocq", "--template_lean_to_rocq", dest="template_lean_to_rocq")
         parser.add_argument("--prob", "--probability_rocq_to_lean", "--probability-rocq-to-lean", dest="probability_rocq_to_lean")
-
+        parser.add_argument("--grad-acc", "--grad_acc", dest="gradient_accumulation")
+        parser.add_argument("--resume-from-step", "--resume_from_step", dest="resume_from_step")
         return parser
 
 
