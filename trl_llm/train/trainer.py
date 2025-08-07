@@ -101,7 +101,7 @@ def train(config: TrainingConfig):
                     if idr_torch.rank == 0:
                         walltime = timedelta(seconds=int(time.perf_counter() - timestamp))
                         print(
-                            f"Total optimization steps: {config.step} | Num microbatches: {i} | Loss: {loss_avg:.3f} | LR: {lr_scheduler.get_last_lr()[0]:.1e} | Memory: {torch.cuda.max_memory_allocated() / (1024 ** 3)} | Walltime: {walltime}"
+                            f"Total optimization steps: {config.step} | Num microbatches: {i} | Loss: {loss_avg:.3f} | LR: {lr_scheduler.get_last_lr()[0]:.1e} | n_tokens: {ntokens} | Memory: {torch.cuda.max_memory_allocated() / (1024 ** 3)} | Walltime: {walltime}"
                         )
 
                 if config.step % config.eval_steps == 0:
@@ -113,8 +113,8 @@ def train(config: TrainingConfig):
                             model=model,
                             tokenizer=tokenizer
                         )
-                    # if not config.do_not_save:
-                    #     save(config.checkpoint_path, model, optimizer, lr_scheduler, ntokens)
+                    if not config.do_not_save:
+                        save(config.checkpoint_path, model, optimizer, lr_scheduler, ntokens)
 
             profiler.step()
 

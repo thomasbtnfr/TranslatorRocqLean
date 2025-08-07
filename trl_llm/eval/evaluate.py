@@ -50,7 +50,7 @@ def evaluate(
             dist.all_gather_object(L, done)
             if all(L):
                 break
-            if idr_torch.rank == 0 and i % 20 == 0:
+            if idr_torch.rank == 0 and i % 100 == 0:
                 print(f"Evaluation step {i}")
 
     perplexity = perplexity.compute().item()
