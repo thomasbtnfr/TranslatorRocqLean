@@ -1,10 +1,14 @@
 from dataclasses import dataclass
 from itertools import repeat
+from pathlib import Path
 
+import idr_torch
 import torch
-from torch.utils.data import IterableDataset as TorchIterableDataset
-from transformers import AutoTokenizer
+from datasets import IterableDataset as HuggingFaceDataset
 from datasets import load_dataset
+from torch.utils.data import IterableDataset as TorchIterableDataset
+from torch.utils.data import get_worker_info
+from transformers import AutoTokenizer
 
 from trl_llm.data.base import BaseDataset
 from trl_llm.train.config import TrainingConfig
@@ -19,13 +23,29 @@ class TrainTRLIterableDataset(TorchIterableDataset):
     _min = torch.finfo(torch.bfloat16).min
 
     def __post_init__(self):
-        self.dataset = load_dataset(str(self.sample_cls.get_data_path(self.config)), split=self.split)
+        if "shard" in str(self.sample_cls.get_data_path(self.config)):
+            self.dataset = self.get_shard_dataset(dataset_path=Path(
+                f"{str(self.sample_cls.get_data_path(self.config))}/{self.split}"))
+        else:
+            self.dataset = load_dataset(str(self.sample_cls.get_data_path(self.config)), split=self.split)
+
+    def get_shard_dataset(self, dataset_path: Path) -> HuggingFaceDataset:
+        arrow_files = sorted(str(f) for f in dataset_path.glob("shard_*/**/*.arrow"))
+        sharded_arrow_files = arrow_files[idr_torch.rank:: idr_torch.world_size]
+        dataset = load_dataset(
+            "arrow",
+            data_files=sharded_arrow_files,
+            streaming=True,
+            split="train",
+        )
+        return dataset
 
     def separated_samples_iter(self):
         seed: int = 123456
 
         while True:
-            dataset = self.dataset.shuffle(seed=seed)  # no buffer_size since it is not iterable
+            dataset = self.dataset.shuffle(seed=seed,
+                                           buffer_size=100 if isinstance(self.dataset, HuggingFaceDataset) else None)
             seed += 1
 
             for i, sample in enumerate(dataset):
