@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any, Protocol, cast
 
 import yaml
+
+from trl_llm.gradio.config import GradioConfig
 from trl_llm.train.config import TrainingConfig
 
 
@@ -59,6 +61,13 @@ def cli():
     )
     TrainingConfig.add_args(training_parser)
 
+    gradio_parser = subparsers.add_parser(
+        "gradio",
+        argument_default=SUPPRESS,
+        parents=[config_file_parser]
+    )
+    GradioConfig.add_args(gradio_parser)
+
     cli_args = cast(BaseNamespace, parser.parse_args())
     cfg_file_args = get_cfg_file_args(cli_args.config_file)
 
@@ -67,6 +76,13 @@ def cli():
 
         config = TrainingConfig.from_mappings(cfg_file_args, cli_args)
         train(config)
+    elif cli_args.action == "gradio":
+        from trl_llm.gradio.main import launch_gradio, make_gradio
+
+        config = GradioConfig.from_mappings(cfg_file_args, cli_args)
+
+        demo = make_gradio(config)
+        launch_gradio(demo=demo, port=7886)
     else:
         raise ValueError("Unknown action: {cli_args.action}")
 
