@@ -56,6 +56,11 @@ class MiniF2F(BaseDataset):
     informal_statement: str = field()
     informal_proof: str = field()
 
+    def get_code(self, config: TrainingConfig) -> tuple[str, str]:
+        rocq_code = config.template_rocq.format(content=self.rocq_header + "\n" + self.rocq_statement)
+        lean_code = config.template_lean.format(content=self.lean_header + "\n" + self.lean_statement)
+        return rocq_code, lean_code
+
     @classmethod
     def get_data_path(cls, config: TrainingConfig):
         return config.minif2f_data_path
