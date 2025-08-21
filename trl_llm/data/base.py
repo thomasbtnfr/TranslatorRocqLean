@@ -76,3 +76,15 @@ class Visual(BaseDataset):
     @classmethod
     def get_data_path(cls, config: TrainingConfig):
         pass
+
+@dataclass
+class DocMathlibMathcomp:
+    filename: str
+    content: str
+
+    @classmethod
+    def get_data_path(cls, config: TrainingConfig):
+        return config.mathlib_mathcomp_data_path
+
+    def get_sample_random_template(self, config: TrainingConfig):
+        return self.content

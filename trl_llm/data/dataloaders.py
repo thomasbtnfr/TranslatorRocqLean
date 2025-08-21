@@ -3,7 +3,7 @@ from itertools import islice
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 
-from trl_llm.data.base import MiniF2F, Putnam
+from trl_llm.data.base import MiniF2F, Putnam, DocMathlibMathcomp
 from trl_llm.data.iterable import TrainTRLIterableDataset, ValidTRLIterableDataset
 from trl_llm.train.config import TrainingConfig
 
@@ -34,6 +34,19 @@ def get_dataloaders(config: TrainingConfig, tokenizer: AutoTokenizer):
             tokenizer=tokenizer,
             sample_cls=Putnam,
             split="train"  # TODO: prepare valid dataset
+        )
+    elif any(word in config.exp_name.lower() for word in ["mathlib", "mathcomp", "doc"]):
+        train_dataset = TrainTRLIterableDataset(
+            config=config,
+            tokenizer=tokenizer,
+            sample_cls=DocMathlibMathcomp,
+            split="train"
+        )
+        val_dataset = ValidTRLIterableDataset(
+            config=config,
+            tokenizer=tokenizer,
+            sample_cls=DocMathlibMathcomp,
+            split="validation"
         )
     else:
         raise ValueError("exp_name value does not permit to load one of the datasets.")

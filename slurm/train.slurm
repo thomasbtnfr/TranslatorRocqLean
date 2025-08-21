@@ -1,14 +1,14 @@
 #! /bin/bash
 
 #SBATCH --job-name=TRL
-#SBATCH --account=hir@h100
+#SBATCH --account=xyi@h100
 #SBATCH --constraint=h100
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:1
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=4
+#SBATCH --gres=gpu:4
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
-#SBATCH --time=02:00:00             # 2 hours is more than sufficient
+#SBATCH --time=02:00:00             # 2 hours is more than sufficient for MiniF2F and Putnam
 #SBATCH --qos=qos_gpu_h100-dev
 #SBATCH --output=slurm.out
 #SBATCH --error=slurm.err
@@ -26,12 +26,11 @@ set -x
 
 srun python -m trl_llm train -c slurm/config.json \
     --model_name starcoder2-7b \
-    --eval_steps 20 \
+    --eval_steps 100 \
     --seq-length 4096 \
-    --num_steps 500 \
-    --warmup_steps 50 \
+    --num_steps 8000 \
+    --warmup_steps 200 \
     --lr 1e-5 \
     --visual-prompt \
     --track \
-    --deactivate-sharding \
     --do-not-save

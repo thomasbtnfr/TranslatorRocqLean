@@ -26,6 +26,9 @@ class TrainingConfig:
     putnam_data_path: Path = field(
         default=None, metadata={"converter": Path, "export": True}
     )
+    mathlib_mathcomp_data_path: Path = field(
+        default=None, metadata={"converter": Path, "export": True}
+    )
     checkpoints_dir: Path = field(
         default=Path.cwd() / "checkpoints", metadata={"converter": Path, "export": True}
     )
@@ -129,6 +132,10 @@ class TrainingConfig:
             "--putnam-data-path", "--putnam_data_path", "--putnam-path", "--putnam_path", dest="putnam_data_path"
         )
         parser.add_argument(
+            "--mathlib-mathcomp-data-path", "--mathlibmathcomp", "--mathlib_mathcomp_data_path",
+            "--mathlibmathcomp_path", "--mathlibmathcomp-path", dest="mathlib_mathcomp_data_path"
+        )
+        parser.add_argument(
             "--mlflow_path", "--mlflow-path", dest="mlflow_path"
         )
         parser.add_argument(
@@ -179,6 +186,7 @@ class TrainingConfig:
     def checkpoint_path(self) -> Path:
         return self.save_path / f"step_{self.step}"
 
+    @property
     def track(self) -> bool:
         return self._track and idr_torch.rank == 0
 

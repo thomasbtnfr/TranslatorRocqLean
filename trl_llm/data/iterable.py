@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from itertools import repeat
 from pathlib import Path
+from typing import Union
 
 import idr_torch
 import torch
@@ -10,7 +11,7 @@ from torch.utils.data import IterableDataset as TorchIterableDataset
 from torch.utils.data import get_worker_info
 from transformers import AutoTokenizer
 
-from trl_llm.data.base import BaseDataset
+from trl_llm.data.base import BaseDataset, DocMathlibMathcomp
 from trl_llm.train.config import TrainingConfig
 
 
@@ -18,18 +19,21 @@ from trl_llm.train.config import TrainingConfig
 class TrainTRLIterableDataset(TorchIterableDataset):
     config: TrainingConfig
     tokenizer: AutoTokenizer
-    sample_cls: BaseDataset
+    sample_cls: Union[BaseDataset, DocMathlibMathcomp]
     split: str = "train"
     _min = torch.finfo(torch.bfloat16).min
 
     def __post_init__(self):
         if "shard" in str(self.sample_cls.get_data_path(self.config)):
-            self.dataset = self.get_shard_dataset(dataset_path=Path(
-                f"{str(self.sample_cls.get_data_path(self.config))}/{self.split}"))
+            path = Path(f"{str(self.sample_cls.get_data_path(self.config))}/{self.split}")
+            if "shard-mathlib-mathcomp" in str(self.sample_cls.get_data_path(self.config)):
+                self.dataset = self.get_shard_parquet_dataset(dataset_path=path)
+            else:
+                self.dataset = self.get_shard_arrow_dataset(dataset_path=path)
         else:
             self.dataset = load_dataset(str(self.sample_cls.get_data_path(self.config)), split=self.split)
 
-    def get_shard_dataset(self, dataset_path: Path) -> HuggingFaceDataset:
+    def get_shard_arrow_dataset(self, dataset_path: Path) -> HuggingFaceDataset:
         arrow_files = sorted(str(f) for f in dataset_path.glob("shard_*/**/*.arrow"))
         sharded_arrow_files = arrow_files[idr_torch.rank:: idr_torch.world_size]
         dataset = load_dataset(
@@ -40,12 +44,23 @@ class TrainTRLIterableDataset(TorchIterableDataset):
         )
         return dataset
 
+    def get_shard_parquet_dataset(self, dataset_path: Path) -> HuggingFaceDataset:
+        parquet_files = sorted([str(p) for p in dataset_path.iterdir()])
+        sharded_parquet_files = parquet_files[idr_torch.rank :: idr_torch.world_size]
+        dataset = load_dataset(
+            "parquet",
+            data_files=sharded_parquet_files,
+            streaming=True,
+            split="train",
+        )
+        return dataset
+
     def separated_samples_iter(self):
         seed: int = 123456
 
         while True:
             dataset = self.dataset.shuffle(seed=seed,
-                                           buffer_size=100 if isinstance(self.dataset, HuggingFaceDataset) else None)
+                                           buffer_size=1000 if isinstance(self.dataset, HuggingFaceDataset) else None)
             seed += 1
 
             for i, sample in enumerate(dataset):
