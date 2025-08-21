@@ -97,6 +97,8 @@ class TrainingConfig:
         if self.run_name == "":
             self.run_name = f"{self.exp_name.lower()}-{time.time_ns()}"
 
+        self.step = self.resume_from_step
+
     @classmethod
     def from_mappings(cls: type[T], *mappings: Mapping[str, Any] | Namespace) -> T:
         unified_dict: dict[str, Any] = dict()

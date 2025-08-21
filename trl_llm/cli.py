@@ -68,6 +68,13 @@ def cli():
     )
     GradioConfig.add_args(gradio_parser)
 
+    dcp_to_hf = subparsers.add_parser(
+        "dcp2hf",
+        argument_default=SUPPRESS,
+        parents=[config_file_parser]
+    )
+    TrainingConfig.add_args(dcp_to_hf)
+
     cli_args = cast(BaseNamespace, parser.parse_args())
     cfg_file_args = get_cfg_file_args(cli_args.config_file)
 
@@ -83,6 +90,11 @@ def cli():
 
         demo = make_gradio(config)
         launch_gradio(demo=demo, port=7886)
+    elif cli_args.action == "dcp2hf":
+        from trl_llm.train.dcp_to_hf import convert
+
+        config = TrainingConfig.from_mappings(cfg_file_args, cli_args)
+        convert(config)
     else:
         raise ValueError("Unknown action: {cli_args.action}")
 

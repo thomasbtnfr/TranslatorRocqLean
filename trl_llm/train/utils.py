@@ -255,6 +255,7 @@ def save(
     lr_scheduler: LRScheduler | None = None,
     ntokens: int | None = None,
 ) -> None:
+    print('Saving model.')
     if optimizer is not None and lr_scheduler is not None and ntokens is not None:
         state_dict = {"app": FullAppState(model, optimizer, lr_scheduler, ntokens)}
     else:
