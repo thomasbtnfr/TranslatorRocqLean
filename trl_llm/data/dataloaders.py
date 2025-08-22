@@ -33,7 +33,7 @@ def get_dataloaders(config: TrainingConfig, tokenizer: AutoTokenizer):
             config=config,
             tokenizer=tokenizer,
             sample_cls=Putnam,
-            split="train"  # TODO: prepare valid dataset
+            split="valid"
         )
     elif any(word in config.exp_name.lower() for word in ["mathlib", "mathcomp", "doc"]):
         train_dataset = TrainTRLIterableDataset(
@@ -55,7 +55,7 @@ def get_dataloaders(config: TrainingConfig, tokenizer: AutoTokenizer):
         dataset=train_dataset,
         batch_size=config.batch_size,
         shuffle=False,
-        num_workers=8,
+        num_workers=4,
         pin_memory=True,
         prefetch_factor=10,
         persistent_workers=True,
@@ -65,10 +65,10 @@ def get_dataloaders(config: TrainingConfig, tokenizer: AutoTokenizer):
         dataset=val_dataset,
         batch_size=config.batch_size,
         shuffle=False,
-        num_workers=8,
+        num_workers=0,
         pin_memory=True,
-        prefetch_factor=10,
-        persistent_workers=True
+        prefetch_factor=2,
+        persistent_workers=False
     )
 
     if config.resume_from_step > 0:
