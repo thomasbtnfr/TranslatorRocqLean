@@ -75,6 +75,13 @@ def cli():
     )
     TrainingConfig.add_args(dcp_to_hf)
 
+    visual_prompt_compile = subparsers.add_parser(
+        "compile_visual_prompt",
+        argument_default=SUPPRESS,
+        parents=[config_file_parser]
+    )
+    TrainingConfig.add_args(visual_prompt_compile)
+
     cli_args = cast(BaseNamespace, parser.parse_args())
     cfg_file_args = get_cfg_file_args(cli_args.config_file)
 
@@ -95,6 +102,11 @@ def cli():
 
         config = TrainingConfig.from_mappings(cfg_file_args, cli_args)
         convert(config)
+    elif cli_args.action == "compile_visual_prompt":
+        from trl_llm.eval.compile_visual_prompt import compile_rocq
+
+        config = TrainingConfig.from_mappings(cfg_file_args, cli_args)
+        compile_rocq(config)
     else:
         raise ValueError("Unknown action: {cli_args.action}")
 

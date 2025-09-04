@@ -41,6 +41,15 @@ class TrainingConfig:
     visu_data_path: Path = field(
         default=Path.cwd() / "trl_llm" / "data" / "visual_prompt.json"
     )
+    visual_prompt_generated_path: Path = field(
+        default=None, metadata={"converter": Path, "export": False}
+    )
+    compile_lean_dir_path: Path = field(
+        default=None, metadata={"converter": Path, "export": False}
+    )
+    compile_lean_file_path: Path = field(
+        default="CompileLean.lean", metadata={"converter": Path, "export": False}
+    )
     exp_name: str = field(default="test", metadata={"converter": str, "export": False})
     run_name: str = field(default="", metadata={"converter": str, "export": False})
     seq_length: int = field(default=2048, metadata={"converter": int, "export": True})
@@ -145,6 +154,21 @@ class TrainingConfig:
             "--visu_data_path",
             dest="visu_data_path"
         )
+        parser.add_argument(
+            "--visual-prompt-generated-path",
+            "--visual_prompt_generated_path",
+            dest="visual_prompt_generated_path"
+        )
+        parser.add_argument(
+            "--compile_lean_dir_path",
+            "--compile-lean-dir-path",
+            dest="compile_lean_dir_path"
+        )
+        parser.add_argument(
+            "--compile_lean_file_path",
+            "--compile-lean-file-path",
+            dest="compile_lean_file_path"
+        )
         parser.add_argument("--exp-name", "--exp_name", dest="exp_name")
         parser.add_argument("--run-name", "--run_name", dest="run_name")
         parser.add_argument(
@@ -191,6 +215,10 @@ class TrainingConfig:
     @property
     def track(self) -> bool:
         return self._track and idr_torch.rank == 0
+
+    @property
+    def compile_lean_full_file_path(self) -> Path:
+        return self.compile_lean_dir_path / self.compile_lean_file_path
 
     def __str__(self) -> str:
         """
