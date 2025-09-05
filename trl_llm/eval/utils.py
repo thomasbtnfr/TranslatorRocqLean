@@ -20,7 +20,7 @@ def extract_step(text: str) -> int:
 
 
 def extract_code(text: str) -> str | bool:
-    """Extract Rocq code block enclosed in ```rocq ... ```."""
+    """Extract Rocq/Lean code block enclosed in ```rocq ... ```."""
     if match := re.search(r"```(?:rocq|coq|lean)\n(.*?)```", text, re.DOTALL):
         return match.group(1).strip()
     return False
