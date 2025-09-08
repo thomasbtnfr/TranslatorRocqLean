@@ -59,11 +59,13 @@ class TrainingConfig:
     visual_prompt: bool = field(default=False, metadata={"converter": bool, "export": False})
     deactivate_sharding: bool = field(default=False, metadata={"converter": bool, "export": True})
     do_not_save: bool = field(default=False, metadata={"converter": bool, "export": True})
+    use_putnam_visual: bool = field(default=False, metadata={"converter": bool, "export": True})
     num_steps: int = field(default=1000, metadata={"converter": int, "export": True})
     lr: float = field(default=1e-05, metadata={"converter": float, "export": True})
     warmup_steps: int = field(default=200, metadata={"converter": int, "export": True})
     batch_size: int = field(default=1, metadata={"converter": int, "export": True})
     eval_steps: int = field(default=1000, metadata={"converter": int, "export": True})
+    visual_n_first_prompt: int = field(default=-1, metadata={"converter": int, "export": True})
     template_rocq: str = field(
         default="Rocq code:\n```rocq\n{content}\n```",
         metadata={"converter": str, "export": True}
@@ -183,6 +185,7 @@ class TrainingConfig:
         parser.add_argument("--visual-prompt", action=BooleanOptionalAction)
         parser.add_argument("--deactivate-sharding", action=BooleanOptionalAction)
         parser.add_argument("--do-not-save", action=BooleanOptionalAction)
+        parser.add_argument("--use-putnam-visual", action=BooleanOptionalAction)
         parser.add_argument("--warmup_steps", "--warmup-steps", dest="warmup_steps")
         parser.add_argument("--bsz", "--batch-size", "--batch_size", dest="batch_size")
         parser.add_argument("--eval-steps", "--eval_steps", dest="eval_steps")
@@ -193,6 +196,7 @@ class TrainingConfig:
         parser.add_argument("--prob", "--probability_rocq_to_lean", "--probability-rocq-to-lean", dest="probability_rocq_to_lean")
         parser.add_argument("--grad-acc", "--grad_acc", dest="gradient_accumulation")
         parser.add_argument("--resume-from-step", "--resume_from_step", dest="resume_from_step")
+        parser.add_argument("--visual-n-first-prompt", dest="--visual_n_first_prompt")
         return parser
 
 

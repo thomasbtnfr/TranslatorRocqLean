@@ -15,6 +15,30 @@ from trl_llm.data.base import BaseDataset, DocMathlibMathcomp
 from trl_llm.train.config import TrainingConfig
 
 
+def get_shard_arrow_dataset(dataset_path: Path) -> HuggingFaceDataset:
+    arrow_files = sorted(str(f) for f in dataset_path.glob("shard_*/**/*.arrow"))
+    sharded_arrow_files = arrow_files[idr_torch.rank:: idr_torch.world_size]
+    dataset = load_dataset(
+        "arrow",
+        data_files=sharded_arrow_files,
+        streaming=True,
+        split="train",
+    )
+    return dataset
+
+
+def get_shard_parquet_dataset(dataset_path: Path) -> HuggingFaceDataset:
+    parquet_files = sorted([str(p) for p in dataset_path.iterdir()])
+    sharded_parquet_files = parquet_files[idr_torch.rank :: idr_torch.world_size]
+    dataset = load_dataset(
+        "parquet",
+        data_files=sharded_parquet_files,
+        streaming=True,
+        split="train",
+    )
+    return dataset
+
+
 @dataclass
 class TrainTRLIterableDataset(TorchIterableDataset):
     config: TrainingConfig
@@ -27,33 +51,11 @@ class TrainTRLIterableDataset(TorchIterableDataset):
         if "shard" in str(self.sample_cls.get_data_path(self.config)):
             path = Path(f"{str(self.sample_cls.get_data_path(self.config))}/{self.split}")
             if "shard-mathlib-mathcomp" in str(self.sample_cls.get_data_path(self.config)):
-                self.dataset = self.get_shard_parquet_dataset(dataset_path=path)
+                self.dataset = get_shard_parquet_dataset(dataset_path=path)
             else:
-                self.dataset = self.get_shard_arrow_dataset(dataset_path=path)
+                self.dataset = get_shard_arrow_dataset(dataset_path=path)
         else:
             self.dataset = load_dataset(str(self.sample_cls.get_data_path(self.config)), split=self.split)
-
-    def get_shard_arrow_dataset(self, dataset_path: Path) -> HuggingFaceDataset:
-        arrow_files = sorted(str(f) for f in dataset_path.glob("shard_*/**/*.arrow"))
-        sharded_arrow_files = arrow_files[idr_torch.rank:: idr_torch.world_size]
-        dataset = load_dataset(
-            "arrow",
-            data_files=sharded_arrow_files,
-            streaming=True,
-            split="train",
-        )
-        return dataset
-
-    def get_shard_parquet_dataset(self, dataset_path: Path) -> HuggingFaceDataset:
-        parquet_files = sorted([str(p) for p in dataset_path.iterdir()])
-        sharded_parquet_files = parquet_files[idr_torch.rank :: idr_torch.world_size]
-        dataset = load_dataset(
-            "parquet",
-            data_files=sharded_parquet_files,
-            streaming=True,
-            split="train",
-        )
-        return dataset
 
     def separated_samples_iter(self):
         seed: int = 123456
