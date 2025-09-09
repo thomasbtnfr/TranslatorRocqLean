@@ -34,14 +34,17 @@ def compile_rocq(config: TrainingConfig) -> None:
         extracted_code = extract_code(generated)
         has_compiled = False
         language = None
+        error_msg = None
 
         if config.template_lean_to_rocq in prompt:
             language = "rocq"
-            has_compiled = extracted_code and check_rocq_code(extracted_code)
+            if extracted_code:
+                has_compiled, error_msg = check_rocq_code(extracted_code)
 
         elif config.template_rocq_to_lean in prompt:
             language = "lean"
-            has_compiled = extracted_code and check_lean_code(extracted_code, config)
+            if extracted_code:
+                has_compiled, error_msg = check_lean_code(extracted_code, config)
 
         else:
             print("\t\t\tUnknown template")
@@ -61,7 +64,8 @@ def compile_rocq(config: TrainingConfig) -> None:
             "generated": generated,
             "extracted_code": extracted_code,
             "has_compiled": has_compiled,
-            "language": language
+            "language": language,
+            "error_msg": error_msg
         })
 
     # Reporting
