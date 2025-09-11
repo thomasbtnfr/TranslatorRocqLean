@@ -50,6 +50,9 @@ class TrainingConfig:
     compile_lean_file_path: Path = field(
         default="CompileLean.lean", metadata={"converter": Path, "export": False}
     )
+    dcp_to_hf_saved_name: str = field(
+        default="starcoder2-instruct", metadata={"converter": str, "export": False}
+    )
     exp_name: str = field(default="test", metadata={"converter": str, "export": False})
     run_name: str = field(default="", metadata={"converter": str, "export": False})
     seq_length: int = field(default=2048, metadata={"converter": int, "export": True})
@@ -170,6 +173,11 @@ class TrainingConfig:
             "--compile_lean_file_path",
             "--compile-lean-file-path",
             dest="compile_lean_file_path"
+        )
+        parser.add_argument(
+            "--dcp-to-hf-saved-name",
+            "--dcp_to_hf_saved_name",
+            dest="dcp_to_hf_saved_name"
         )
         parser.add_argument("--exp-name", "--exp_name", dest="exp_name")
         parser.add_argument("--run-name", "--run_name", dest="run_name")

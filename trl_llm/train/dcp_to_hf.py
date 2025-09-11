@@ -23,6 +23,6 @@ def convert(config: TrainingConfig) -> None:
     load(config.checkpoint_path, model)
 
     print("saving...")
-    model_name = "starcoder2-instruct"
+    model_name = config.dcp_to_hf_saved_name
     model.save_pretrained(model_name)
     tokenizer.save_pretrained(model_name)
