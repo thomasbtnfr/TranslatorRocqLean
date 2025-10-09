@@ -1,0 +1,9 @@
+{
+  "model_dir": "/lustre/fsmisc/dataset/HuggingFace_Models/bigcode",
+  "checkpoints_dir": "/lustre/fsn1/projects/rech/hir/uxp55sd/checkpoints",
+  "minif2f_data_path": "/lustre/fsn1/projects/rech/hir/uxp55sd/dataset_trl/shard-miniF2F-rocq-lean",
+  "putnam_data_path": "/lustre/fsn1/projects/rech/hir/uxp55sd/dataset_trl/shard-putnambench-rocq-lean",
+  "mathlib_mathcomp_data_path": "/lustre/fsn1/projects/rech/hir/uxp55sd/dataset_trl/shard-mathlib-mathcomp",
+  "mlflow_path": "/lustre/fswork/projects/rech/hir/uxp55sd/TranslatorRocqLean/mlruns",
+  "exp_name": "starcoder2-finetuning-doc"
+}
