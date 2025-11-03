@@ -28,6 +28,7 @@ RUN eval $(opam env)
 # Install lean
 ENV ELAN_HOME=/opt/.elan
 ENV PATH=$ELAN_HOME/bin:$PATH
+RUN mkdir -p $ELAN_HOME && chmod -R 777 $ELAN_HOME
 
 RUN curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
 
@@ -51,6 +52,14 @@ RUN pip install -e . \
 && pip install gradio \
 && pip install accelerate \
 && pip install trl \
-&& pip install vllm
+&& pip install vllm \
+&& cd .. \
+&& git clone https://github.com/idriscnrs/idr_accelerate.git \
+&& cd idr_accelerate \
+&& pip install . \
+&& pip install deepspeed
+
+# Necessary for deepspeed (need CUDA Compiler and not only CUDA Runtime)
+RUN conda install -c nvidia cuda-compiler
 
 WORKDIR /TranslatorRocqLean
