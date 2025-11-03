@@ -65,9 +65,9 @@ def get_dataloaders(config: TrainingConfig, tokenizer: AutoTokenizer):
         dataset=val_dataset,
         batch_size=config.batch_size,
         shuffle=False,
-        num_workers=0,
+        num_workers=4,
         pin_memory=True,
-        prefetch_factor=2,
+        prefetch_factor=10,
         persistent_workers=False
     )
 

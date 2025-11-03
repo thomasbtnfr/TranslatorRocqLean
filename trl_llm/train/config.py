@@ -53,6 +53,11 @@ class TrainingConfig:
     dcp_to_hf_saved_name: str = field(
         default="starcoder2-instruct", metadata={"converter": str, "export": False}
     )
+    output_dir_grpo: Path = field(
+        default=None, metadata={"converter": Path, "export": True}
+    )
+
+    prompt_type: str = field(default="sft", metadata={"converter": str, "export": True})  # or "grpo"
     exp_name: str = field(default="test", metadata={"converter": str, "export": False})
     run_name: str = field(default="", metadata={"converter": str, "export": False})
     seq_length: int = field(default=2048, metadata={"converter": int, "export": True})
@@ -63,6 +68,7 @@ class TrainingConfig:
     deactivate_sharding: bool = field(default=False, metadata={"converter": bool, "export": True})
     do_not_save: bool = field(default=False, metadata={"converter": bool, "export": True})
     use_putnam_visual: bool = field(default=False, metadata={"converter": bool, "export": True})
+    verbose_grpo: bool = field(default=False, metadata={"converter": bool, "export": False})
     num_steps: int = field(default=1000, metadata={"converter": int, "export": True})
     lr: float = field(default=1e-05, metadata={"converter": float, "export": True})
     warmup_steps: int = field(default=200, metadata={"converter": int, "export": True})
@@ -179,6 +185,12 @@ class TrainingConfig:
             "--dcp_to_hf_saved_name",
             dest="dcp_to_hf_saved_name"
         )
+        parser.add_argument(
+            "--output-dir-grpo",
+            "--output_dir_grpo",
+            dest="output_dir_grpo"
+        )
+        parser.add_argument("--prompt-type", "--prompt_type", dest="prompt_type")
         parser.add_argument("--exp-name", "--exp_name", dest="exp_name")
         parser.add_argument("--run-name", "--run_name", dest="run_name")
         parser.add_argument(
@@ -194,6 +206,7 @@ class TrainingConfig:
         parser.add_argument("--deactivate-sharding", action=BooleanOptionalAction)
         parser.add_argument("--do-not-save", action=BooleanOptionalAction)
         parser.add_argument("--use-putnam-visual", action=BooleanOptionalAction)
+        parser.add_argument("--verbose-grpo", action=BooleanOptionalAction)
         parser.add_argument("--warmup_steps", "--warmup-steps", dest="warmup_steps")
         parser.add_argument("--bsz", "--batch-size", "--batch_size", dest="batch_size")
         parser.add_argument("--eval-steps", "--eval_steps", dest="eval_steps")

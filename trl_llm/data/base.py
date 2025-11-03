@@ -1,9 +1,11 @@
 import random
+import re
 from abc import ABC, abstractmethod
 from dataclasses import field, dataclass
 
 from trl_llm.train.config import TrainingConfig
 
+PATTERN_BACKTIP = r'```.*?```'
 
 @dataclass
 class BaseDataset(ABC):
@@ -16,15 +18,46 @@ class BaseDataset(ABC):
         lean_code = config.template_lean.format(content=self.lean_statement)
         return rocq_code, lean_code
 
-    def rocq_to_lean_template(self, config: TrainingConfig, eval_template: bool) -> str:
+    def make_template(self, config: TrainingConfig, eval_template: bool, conversion_type: str) -> str|dict:
         rocq_code, lean_code = self.get_code(config)
-        lean_part = config.template_lean.split("\n")[0] + "\n" if eval_template else lean_code
-        return config.template_rocq_to_lean + rocq_code + "\n" + lean_part
+        if conversion_type == "lean2rocq":
+            template_target = config.template_rocq
+            template_conversion = config.template_lean_to_rocq
+            source_code = lean_code
+            target_code = rocq_code
+        elif conversion_type == "rocq2lean":
+            template_target = config.template_lean
+            template_conversion = config.template_rocq_to_lean
+            source_code = rocq_code
+            target_code = lean_code
+        else:
+            raise ValueError("Unknown conversion_type")
 
-    def lean_to_rocq_template(self, config: TrainingConfig, eval_template: bool) -> str:
-        rocq_code, lean_code = self.get_code(config)
-        rocq_part = config.template_rocq.split("\n")[0] + "\n" if eval_template else rocq_code
-        return config.template_lean_to_rocq + lean_code + "\n" + rocq_part
+        target_part = template_target.split("\n")[0] + "\n" if eval_template else target_code
+
+        prompt = template_conversion + source_code + "\n" + target_part
+        completion = re.findall(PATTERN_BACKTIP, target_code, re.DOTALL)[0]  # re.DOTALL affects what the `.` pattern can match. Newlines are matched.
+
+        if config.prompt_type == "sft":
+            return prompt
+        elif config.prompt_type == "grpo":
+            return {"prompt": prompt, "completion": completion}
+        else:
+            raise ValueError("Unknown prompt_type value.")
+
+    def rocq_to_lean_template(self, config: TrainingConfig, eval_template: bool) -> str|dict:
+        return self.make_template(
+            config=config,
+            eval_template=eval_template,
+            conversion_type="rocq2lean"
+        )
+
+    def lean_to_rocq_template(self, config: TrainingConfig, eval_template: bool) -> str|dict:
+        return self.make_template(
+            config=config,
+            eval_template=eval_template,
+            conversion_type="lean2rocq"
+        )
 
     def get_sample(self, config: TrainingConfig, template: str, eval_template: bool) -> str:
         if template == "rocq_to_lean":
@@ -35,6 +68,7 @@ class BaseDataset(ABC):
             raise ValueError(f"Invalid template: {template}")
 
     def get_sample_random_template(self, config: TrainingConfig, eval_template: bool = False) -> str:
+        if config.prompt_type == "grpo": eval_template=True
         template_choice = random.choices(
             ["rocq_to_lean", "lean_to_rocq"],
             weights=[

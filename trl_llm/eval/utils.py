@@ -19,10 +19,10 @@ def extract_step(text: str) -> int:
     raise ValueError(f"Step number not found in: {text}")
 
 
-def extract_code(text: str) -> str | bool:
+def extract_code(text: str) -> tuple[str, str] | bool:
     """Extract Rocq/Lean code block enclosed in ```rocq ... ```."""
-    if match := re.search(r"```(?:rocq|coq|lean)\n(.*?)```", text, re.DOTALL):
-        return match.group(1).strip()
+    if match := re.search(r"```(rocq|coq|lean)\n(.*?)```", text, re.DOTALL):
+        return match.group(1).strip(), match.group(2).strip()
     return False
 
 def check_rocq_code(code: str) -> tuple[bool, str | None]:
@@ -31,7 +31,7 @@ def check_rocq_code(code: str) -> tuple[bool, str | None]:
         tmp_file.write(code)
         tmp_file.flush()
         try:
-            subprocess.run(["coqc", tmp_file.name],
+            subprocess.run(["rocq", "c",  tmp_file.name],
                                     check=True,
                                     capture_output=True,
                                     text=True

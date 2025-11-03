@@ -26,5 +26,8 @@ set -x
 
 srun python -m trl_llm dcp2hf -c slurm/config.json \
     --model_name starcoder2-15b \
-    --resume_from_step 3200 \
-    --run-name starcoder2-finetuning-doc-1755780670096891382
+    --resume_from_step 8000 \
+    --exp-name starcoder2-finetuning-doc \
+    --run-name starcoder2-finetuning-doc-1757493881836434641 \
+    --dcp-to-hf-saved-name starcoder2-instruct-doc-8000
+

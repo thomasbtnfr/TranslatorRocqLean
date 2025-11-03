@@ -1,6 +1,7 @@
 import os
 import subprocess
 from collections import defaultdict
+from tqdm import tqdm
 
 import pandas as pd
 
@@ -23,7 +24,7 @@ def compile_rocq(config: TrainingConfig) -> None:
     result = subprocess.run(["lake", "build"], capture_output=True, text=True)
     print(result)
 
-    for sample in visual_prompt_content:
+    for sample in tqdm(visual_prompt_content):
         step = extract_step(sample[0])
         success_cnt_step.setdefault(step, 0)
         sample_counts[step] += 1
@@ -33,18 +34,18 @@ def compile_rocq(config: TrainingConfig) -> None:
         prompt, generated = sample[1], sample[2]
         extracted_code = extract_code(generated)
         has_compiled = False
-        language = None
+        language = extracted_code[0] if extracted_code else None
         error_msg = None
 
         if config.template_lean_to_rocq in prompt:
             language = "rocq"
             if extracted_code:
-                has_compiled, error_msg = check_rocq_code(extracted_code)
+                has_compiled, error_msg = check_rocq_code(extracted_code[1])
 
         elif config.template_rocq_to_lean in prompt:
             language = "lean"
             if extracted_code:
-                has_compiled, error_msg = check_lean_code(extracted_code, config)
+                has_compiled, error_msg = check_lean_code(extracted_code[1], config)
 
         else:
             print("\t\t\tUnknown template")
@@ -52,6 +53,7 @@ def compile_rocq(config: TrainingConfig) -> None:
         if extracted_code:
             if has_compiled:
                 success_cnt_step[step] += 1
+                print(f"{language=} Success!")
             else:
                 print("*" * 100, f"Failed to compile step={step}, sample={sample_index}, language={language}")
         else:

@@ -75,6 +75,13 @@ def cli():
     )
     TrainingConfig.add_args(dcp_to_hf)
 
+    grpo_parser = subparsers.add_parser(
+        "grpo",
+        argument_default=SUPPRESS,
+        parents=[config_file_parser]
+    )
+    TrainingConfig.add_args(grpo_parser)
+
     visual_prompt_compile = subparsers.add_parser(
         "compile_visual_prompt",
         argument_default=SUPPRESS,
@@ -90,6 +97,11 @@ def cli():
 
         config = TrainingConfig.from_mappings(cfg_file_args, cli_args)
         train(config)
+    elif cli_args.action == "grpo":
+        from trl_llm.train.grpo import finetune
+
+        config = TrainingConfig.from_mappings(cfg_file_args, cli_args)
+        finetune(config)
     elif cli_args.action == "gradio":
         from trl_llm.gradio.main import launch_gradio, make_gradio
 

@@ -1,14 +1,12 @@
 from dataclasses import dataclass
 from itertools import repeat
 from pathlib import Path
-from typing import Union
 
 import idr_torch
 import torch
 from datasets import IterableDataset as HuggingFaceDataset
 from datasets import load_dataset
 from torch.utils.data import IterableDataset as TorchIterableDataset
-from torch.utils.data import get_worker_info
 from transformers import AutoTokenizer
 
 from trl_llm.data.base import BaseDataset, DocMathlibMathcomp
@@ -43,7 +41,7 @@ def get_shard_parquet_dataset(dataset_path: Path) -> HuggingFaceDataset:
 class TrainTRLIterableDataset(TorchIterableDataset):
     config: TrainingConfig
     tokenizer: AutoTokenizer
-    sample_cls: Union[BaseDataset, DocMathlibMathcomp]
+    sample_cls: BaseDataset | DocMathlibMathcomp
     split: str = "train"
     _min = torch.finfo(torch.bfloat16).min
 

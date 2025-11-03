@@ -26,14 +26,15 @@ RUN mkdir -p /opt/opam && chmod -R 777 /opt/opam \
 RUN eval $(opam env)
 
 # Install lean
-ENV ELAN_HOME=/opt/elan
+ENV ELAN_HOME=/opt/.elan
 ENV PATH=$ELAN_HOME/bin:$PATH
 
 RUN curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
 
 RUN lake +leanprover/lean4:nightly-2024-04-24 new DebugLean math \
 && cd DebugLean \
-&& lake update
+&& lake update \
+&& lake build
 
 COPY ./TranslatorRocqLean .
 

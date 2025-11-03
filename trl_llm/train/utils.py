@@ -346,7 +346,7 @@ def shard(model: AutoModelForCausalLM, hsdp: bool = True):
 def init_sharded_model(config: TrainingConfig) -> ModelForCausalLM:
     model: ModelForCausalLM = AutoModelForCausalLM.from_pretrained(
         config.model_path,
-        torch_dtype=torch.bfloat16,
+        dtype=torch.bfloat16,
         device_map=idr_torch.device,
         trust_remote_code=True,
         _attn_implementation="sdpa",
