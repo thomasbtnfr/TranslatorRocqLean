@@ -10,7 +10,7 @@ pip install --editable .
 ## CLI
 - General
   - `python -m trl_llm --help`
-- Training
+- Training (SFT + GRPO)
   - On Jean Zay: `module load pytorch-gpu/py3/2.7.0`
   - `python -m trl_llm train --help`
   - See `slurm/train.slurm` and `slurm/train_specialization.slurm`
@@ -36,3 +36,7 @@ pip install --editable .
       
 ## MLFlow
 - `mlflow ui --backend-store-uri {path_to_your_mlflow_directory}`
+
+## Dockerfile
+- Container with all the necessary environment to launch training by GRPO. The environment includes rocq, lean, trl, vllm, deepspeed, etc.
+  - https://hub.docker.com/r/thomasbtnfr/trl-rl-deepspeed
