@@ -89,7 +89,7 @@ def finetune(config: TrainingConfig):
     compile_rewards_fn_verbose.__name__ = "compile_rewards"
 
     trainer = GRPOTrainer(
-        model=config.model_path,
+        model=str(config.model_path),
         reward_funcs=[template_rewards_fn_verbose, compile_rewards_fn_verbose],
         args=grpo_config,
         train_dataset=train_ds,
