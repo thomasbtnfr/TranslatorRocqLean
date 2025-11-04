@@ -27,7 +27,7 @@ pip install --editable .
       - Attention to the version of Rocq installed. There may be incompatibilities/conflicts. For PutnamBench, follow these [instructions](https://github.com/trishullab/PutnamBench/blob/main/coq/setup.sh).
     - Lean:
       - After [installing Lean](https://leanprover-community.github.io/install/linux.html), you need to create a project that includes Mathlib. To do this, follow these [instructions](https://leanprover-community.github.io/install/project.html#creating-a-lean-project).
-  - One the environments have been created, the following command should work:
+  - Once the environments have been created, the following command should work:
     - ```bash
       python -m trl_llm compile_visual_prompt
       --visual_prompt_generated_path visual_prompt.json
