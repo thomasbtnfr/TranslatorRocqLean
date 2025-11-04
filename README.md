@@ -38,5 +38,5 @@ pip install --editable .
 - `mlflow ui --backend-store-uri {path_to_your_mlflow_directory}`
 
 ## Dockerfile
-- Container with all the necessary environment to launch training by GRPO. The environment includes rocq, lean, trl, vllm, deepspeed, etc.
+- Container with all the necessary tools to launch training by GRPO. The environment includes rocq, lean, trl, vllm, deepspeed, etc.
   - https://hub.docker.com/r/thomasbtnfr/trl-rl-deepspeed
