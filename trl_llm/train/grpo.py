@@ -1,6 +1,7 @@
 import os
 import random
 import mlflow
+import re
 from functools import partial
 
 from transformers import AutoTokenizer
@@ -13,6 +14,7 @@ from trl_llm.train.config import TrainingConfig
 
 
 def compile_rewards(completions: list[str], **kwargs) -> list[float]:
+    # len(completions) = grad_acc * num_generations
     extracted_codes = [extract_code(content) for content in completions]
     config = kwargs.get('config')
 
@@ -37,6 +39,7 @@ def compile_rewards(completions: list[str], **kwargs) -> list[float]:
 
 
 def template_rewards(completions: list[str], **kwargs) -> list[float]:
+    # len(completions) = grad_acc * num_generations
     extracted_codes = [extract_code(content) for content in completions]
 
     verbose = kwargs.get('verbose', False)
@@ -47,6 +50,22 @@ def template_rewards(completions: list[str], **kwargs) -> list[float]:
 
     return [1.0 if _match else 0.0 for _match in extracted_codes]
 
+def theorem_name_rewards(completions: list[str], **kwargs) -> list[float]:
+    # len(completions) = grad_acc * num_generations
+    def get_theorem_name(prompt):
+        match = re.search(r'^[Tt]heorem\s+(\w+)', prompt, re.MULTILINE)
+        if match:
+            theorem_name = match.group(1)
+            return theorem_name
+        else:
+            return None
+
+    theorem_names = [get_theorem_name(prompt) for prompt in kwargs['prompts']]
+    return [
+        1.0 if (ct := get_theorem_name(comp)) is not None and ct in tn else 0.0
+        for comp, tn in zip(completions, theorem_names)
+    ]
+
 def finetune(config: TrainingConfig):
     mlflow.set_experiment(config.exp_name)
 
@@ -55,7 +74,7 @@ def finetune(config: TrainingConfig):
         logging_steps=10,
         max_steps=2000,
         learning_rate=1e-6,
-        gradient_accumulation_steps=16,
+        gradient_accumulation_steps=32,
         report_to="mlflow",
         bf16=True,
         dataloader_num_workers=8,
@@ -90,7 +109,7 @@ def finetune(config: TrainingConfig):
 
     trainer = GRPOTrainer(
         model=str(config.model_path),
-        reward_funcs=[template_rewards_fn_verbose, compile_rewards_fn_verbose],
+        reward_funcs=[template_rewards_fn_verbose, compile_rewards_fn_verbose, theorem_name_rewards],
         args=grpo_config,
         train_dataset=train_ds,
         eval_dataset=val_ds,
